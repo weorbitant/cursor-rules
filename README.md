@@ -187,3 +187,4 @@ Report issues at: https://github.com/weorbitant/cursor-rules/issues
 ## 🏠 Homepage
 
 https://github.com/weorbitant/cursor-rules
+
