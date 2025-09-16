@@ -1,8 +1,8 @@
 {
-  "name": "@weorbitant/cursor-rules",
+  "name": "@orbitant/cursor-rules",
   "version": "0.0.1",
-  "description": "Cursor rules writen by weorbitant",
-  "author": "weorbitant",
+  "description": "Cursor rules writen by orbitant",
+  "author": "orbitant",
   "main": "index.js",
   "bin": {
     "cursor-rules": "./bin/cli.js"
