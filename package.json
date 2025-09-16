@@ -38,9 +38,6 @@
     "type": "git",
     "url": "git+https://github.com/weorbitant/cursor-rules.git"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "license": "UNLICENSED",
   "bugs": {
     "url": "https://github.com/weorbitant/cursor-rules/issues"
