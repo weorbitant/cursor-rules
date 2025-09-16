@@ -38,6 +38,9 @@
     "type": "git",
     "url": "git+https://github.com/weorbitant/cursor-rules.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "UNLICENSED",
   "bugs": {
     "url": "https://github.com/weorbitant/cursor-rules/issues"
