@@ -26,14 +26,15 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: authenticate on github npm
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+      - name: authenticate on npm
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
       - name: check existing package version
         run: |
           set +e
-          npm view "${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }}" --registry=https://npm.pkg.github.com > /dev/null 2>&1
+          npm view "${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }}" > /dev/null 2>&1
           npm_exit_code=$?
           set -e
           if [ $npm_exit_code -eq 0 ]; then
