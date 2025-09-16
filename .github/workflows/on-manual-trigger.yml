@@ -1,0 +1,14 @@
+name: manual trigger
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    uses: ./.github/workflows/task-test.yml
+
+  publish-package:
+    needs: test
+    uses: ./.github/workflows/task-publish-package.yml
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,95 @@
+---
+globs: src/config/*
+alwaysApply: false
+---
+# README Auto-update Rules - Async Messaging
+
+## Auto-update README Messaging Section
+
+When files in `src/config/` are modified (specifically configuration files containing RabbitMQ settings), automatically update the README.md file with an "Async Messaging" section that includes:
+
+1. A Mermaid diagram showing the messaging architecture with exchanges, queues, and routing keys
+2. A table describing each queue, its purpose, and routing keys
+3. The section should be placed after the "Data Model" section and before "Project setup"
+
+### Messaging Section Template
+
+The messaging section should follow this structure:
+
+```markdown
+## Async Messaging
+
+This service uses RabbitMQ for asynchronous communication with other services in the data platform.
+
+### Messaging Diagram
+
+```mermaid
+graph LR
+    subgraph Queues["Queues"]
+        Queue1["platform-adapter:employee:persisted"]
+        Queue2["platform-adapter:client-assignment:persisted"]
+    end
+    
+    subgraph Subscriptions["Subscriptions"]
+        Sub1["employee_persisted"]
+        Sub2["client_assignment_persisted"]
+    end
+    
+    subgraph Consumer["Consumer"]
+        ConsumerTag["pd-service-platform-adapter"]
+    end
+    
+    Queue1 -->|*data-factory.v1.employee.persisted*| Sub1
+    Queue2 -->|*data-factory.v1.client-assignment.persisted*| Sub2
+    
+    Sub1 --> ConsumerTag
+    Sub2 --> ConsumerTag
+    
+    classDef dashedBox fill:transparent,stroke:#666,stroke-width:2px,stroke-dasharray: 5 5
+    class Queues dashedBox
+```
+
+### Queue Configuration
+
+| Exchange | Binding | Queue Name | Subscription |
+|----------|---------|------------|--------------|
+| internal | data-factory.v1.employee.persisted | platform-adapter:employee:persisted | employee_persisted |
+| internal | data-factory.v1.client-assignment.persisted | platform-adapter:client-assignment:persisted | client_assignment_persisted |
+
+```
+
+### Update Rules
+
+1. **When any file in `src/config/` is modified:**
+   - Parse configuration files to extract RabbitMQ settings
+   - Generate an updated Mermaid messaging diagram
+   - Update the queue configuration table
+   - Replace the entire "Async Messaging" section in README.md
+
+2. **Configuration parsing logic:**
+   - Extract `rabbitmq` configuration object
+   - Parse `queues` array for queue names and bindings
+   - Extract `routingKey` values from bindings
+   - Parse `subscriptions` array for subscription names
+   - Extract `exchange` name and `consumerTag`
+
+3. **Mermaid diagram generation:**
+   - Create a graph showing the exchange, queues, and external services
+   - Use arrows to show message flow direction
+   - Include routing keys as labels on arrows
+   - Group related elements in subgraphs
+
+4. **File structure:**
+   - Always maintain the existing README structure
+   - Place the Async Messaging section after Data Model and before Project setup
+   - Use consistent markdown formatting
+   - Ensure the Mermaid diagram is properly formatted and valid
+
+### Implementation Notes
+
+- The cursor rule should trigger on any change to files matching `src/config/*.ts`
+- The update should be atomic - either fully update the section or leave it unchanged
+- Preserve all other README content exactly as it was
+- Use TypeScript AST parsing to accurately extract configuration information
+- Handle edge cases like missing configuration properties or malformed config gracefully
+- Support multiple environment configurations (development, production, etc.)

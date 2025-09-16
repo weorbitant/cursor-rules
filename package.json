@@ -1,0 +1,49 @@
+{
+  "name": "@weorbitant/cursor-rules",
+  "version": "0.0.1",
+  "description": "Cursor rules writen by weorbitant",
+  "author": "weorbitant",
+  "main": "index.js",
+  "bin": {
+    "cursor-rules": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --collectCoverage"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "chalk": "^4.1.2",
+    "fs-extra": "^11.1.1",
+    "glob": "^10.3.10"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "index.js",
+      "bin/cli.js",
+      "!**/node_modules/**"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["text", "lcov", "html"],
+    "silent": false,
+    "verbose": false
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weorbitant/cursor-rules.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/weorbitant/cursor-rules/issues"
+  },
+  "homepage": "https://github.com/weorbitant/cursor-rules#readme"
+}

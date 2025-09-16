@@ -1,0 +1,85 @@
+---
+globs: src/domain/models/*
+alwaysApply: false
+---
+# README Auto-update Rules
+
+## Auto-update README Data Model Section
+
+When files in `src/domain/models/` are modified, automatically update the README.md file with a "Data Model" section that includes:
+
+1. A Mermaid entity relationship diagram showing all entities and their relationships
+2. A table describing each entity and its key properties
+3. The section should be placed after the "Description" section and before "Project setup"
+
+### Data Model Section Template
+
+The data model section should follow this structure:
+
+```markdown
+## Data Model
+
+This service manages the following entities and their relationships:
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    User
+    Profile
+    WhitelistCategory
+    WhitelistPattern
+    WhitelistTeam
+    
+    User ||--o| Profile : "has one"
+```
+
+### Entity Descriptions
+
+| Entity | Description | Key Properties |
+|--------|-------------|----------------|
+| User | Core user information and profile data | id, name, email, team, department, role, isActive |
+| Profile | External platform user account linked to user | id, email, groupId, isActive, timestamps |
+| WhitelistCategory | Allowed category values for validation | value |
+| WhitelistPattern | Allowed pattern values for validation | value |
+| WhitelistTeam | Allowed team values for validation | value |
+
+### Relationships
+
+- **User ↔ Profile**: One-to-one relationship where each user can have one external platform account
+- **Whitelist entities**: Independent lookup tables for data validation
+```
+
+### Update Rules
+
+1. **When any file in `src/domain/models/` is modified:**
+   - Parse all entity files to extract entity names, properties, and relationships
+   - Generate an updated Mermaid ERD diagram
+   - Update the entity descriptions table
+   - Replace the entire "Data Model" section in README.md
+
+2. **Entity parsing logic:**
+   - Extract `@Entity()` decorated classes
+   - Parse `@PrimaryKey()`, `@Property()`, and relationship decorators
+   - Identify relationships: `@OneToOne`, `@OneToMany`, `@ManyToOne`, `@ManyToMany`
+   - Extract property types and constraints (unique, nullable, etc.)
+
+3. **Mermaid diagram generation:**
+   - Include all entities as simple boxes (entity names only)
+   - Show relationships with appropriate cardinality symbols
+   - Only include entities that have relationships
+   - Use relationship symbols: ||--o| (one-to-one optional), ||--|| (one-to-one required), ||--o{ (one-to-many), }o--o{ (many-to-many)
+
+4. **File structure:**
+   - Always maintain the existing README structure
+   - Place the Data Model section after Description and before Project setup
+   - Use consistent markdown formatting
+   - Ensure the Mermaid diagram is properly formatted and valid
+
+### Implementation Notes
+
+- The cursor rule should trigger on any change to files matching `src/domain/models/*.ts`
+- The update should be atomic - either fully update the section or leave it unchanged
+- Preserve all other README content exactly as it was
+- Use TypeScript AST parsing to accurately extract entity information
+- Handle edge cases like missing decorators or malformed entity definitions gracefully

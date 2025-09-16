@@ -1,0 +1,11 @@
+name: pull request done/updated
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+
+jobs:
+  test:
+    uses: ./.github/workflows/task-test.yml

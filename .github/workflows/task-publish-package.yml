@@ -1,0 +1,65 @@
+name: publish package
+
+on:
+  workflow_call:
+    secrets:
+      NPM_TOKEN:
+        description: 'npm token'
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: get package info
+        id: package_info
+        run: |
+          PACKAGE_NAME=$(jq -r .name package.json)
+          PACKAGE_VERSION=$(jq -r .version package.json)
+          echo "PACKAGE_NAME=$PACKAGE_NAME" >> $GITHUB_ENV
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: authenticate on github npm
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: check existing package version
+        run: |
+          set +e
+          npm view "${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }}" --registry=https://npm.pkg.github.com > /dev/null 2>&1
+          npm_exit_code=$?
+          set -e
+          if [ $npm_exit_code -eq 0 ]; then
+              echo "❌ Version ${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }} already exists, aborting publish."
+              exit 1
+          fi
+          echo "✅ Version ${{ env.PACKAGE_NAME }}@${{ env.PACKAGE_VERSION }} is available, proceeding with publish."
+
+      - name: install dependencies
+        run: npm ci
+
+      - name: publish package
+        run: npm publish
+
+      # - name: create github tag
+      #   run: |
+      #     git tag "v${{ env.PACKAGE_VERSION }}"
+      #     git push origin "v${{ env.PACKAGE_VERSION }}"
+
+      # - name: create github release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: "v${{ env.PACKAGE_VERSION }}"
+      #     release_name: "Release v${{ env.PACKAGE_VERSION }}"
+      #     body: "Automated release for version v${{ env.PACKAGE_VERSION }}"
+      #     draft: false
+      #     prerelease: false

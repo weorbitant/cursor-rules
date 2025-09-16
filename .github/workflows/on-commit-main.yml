@@ -1,0 +1,16 @@
+name: commit into main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    uses: ./.github/workflows/task-test.yml
+
+  publish-package:
+    needs: test
+    uses: ./.github/workflows/task-publish-package.yml
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
