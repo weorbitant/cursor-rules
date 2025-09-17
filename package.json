@@ -1,6 +1,6 @@
 {
   "name": "@orbitant/cursor-rules",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Cursor rules writen by orbitant",
   "author": "orbitant",
   "main": "index.js",

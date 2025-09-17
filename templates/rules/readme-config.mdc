@@ -1,23 +1,27 @@
 ---
 globs: src/config/*, .helm/values.yaml, .github/workflows/*.yml, src/app.module.ts, package.json
-alwaysApply: false
 ---
-# README Auto-update Rules - Configuration
+# Configuration README Auto-update
 
-## Auto-update README Configuration Section
+**Trigger:** When configuration files are modified, compare and create or replace the README.md "Configuration" section to be synced with latest values
 
-When configuration files, deployment files, or application modules are modified, automatically update the README.md file with a "Configuration" section that includes:
+**Data Source:** Extract data from config files containing environment variables, deployment settings, and application configuration.
 
-1. A comprehensive table of all required environment variables
-2. The section should be placed after the "Async Messaging" section and before "Project setup"
+---
 
-### Configuration Section Template
+## 📊 Generated Content
 
-The configuration section should follow this structure:
+### 1. Environment Variables Table
+**Purpose:** Display a table with variable, description, type and default value columns
 
+#### Table Specifications
+- ✅ Include all environment variables from config files
+- ✅ Extract descriptions from comments and variable names
+- ✅ Show variable types and default values
+- ✅ Ensure proper markdown table formatting
+
+#### Table example
 ```markdown
-## Configuration
-
 ### Environment Variables
 
 | Variable | Description | Type | Default |
@@ -30,79 +34,3 @@ The configuration section should follow this structure:
 | API_CLIENT_ID | External API client identifier | string | - |
 | API_TENANT_ID | External API tenant identifier | string | - |
 ```
-
-### Update Rules
-
-1. **When any configuration file is modified:**
-   - Parse all config files in `src/config/` to extract environment variables
-   - Process Helm values file (`.helm/values.yaml`) for deployment configuration
-   - Analyze GitHub Actions workflows for environment-specific settings
-   - Extract environment variables from `app.module.ts` and other application files
-   - Generate an updated configuration table
-   - Replace the entire "Configuration" section in README.md
-
-2. **Configuration parsing logic:**
-   - **NestJS Backend Services**: Parse `src/config/*.ts` files for environment variables
-   - **Helm Values**: Extract secrets and environment variables from `.helm/values.yaml`
-   - **GitHub Actions**: Parse workflow files for environment-specific configurations
-   - **Application Modules**: Extract environment variables from module configuration
-   - **Docker Compose**: Parse environment variables from `docker-compose.yml` files
-   - **Environment Files**: Extract variables from `.env` files
-
-3. **Environment variable extraction:**
-   - Identify `process.env.*` references in configuration files
-   - Extract default values and type information
-   - Extract descriptions from comments and variable names
-
-4. **Repository type detection:**
-   - **NestJS Backend**: Look for `@nestjs/core` in package.json and config files in `src/config/`
-   - **Express/Node.js Backend**: Look for Express dependencies and `.env` files
-   - **Frontend Applications**: Look for build tools and framework-specific configs
-   - **Libraries/Packages**: Look for minimal runtime dependencies and export-focused structure
-
-5. **File structure:**
-   - Always maintain the existing README structure
-   - Place the Configuration section after Async Messaging and before Project setup
-   - Use consistent markdown formatting
-   - Ensure tables are properly formatted and readable
-
-### Implementation Notes
-
-- The cursor rule should trigger on any change to files matching the glob patterns
-- The update should be atomic - either fully update the section or leave it unchanged
-- Preserve all other README content exactly as it was
-- Use TypeScript AST parsing for configuration files
-- Handle edge cases like missing configuration properties or malformed config gracefully
-- Support multiple environment configurations and deployment strategies
-- Extract meaningful descriptions from variable names and comments
-
-### Repository Type Support
-
-#### NestJS Backend Services
-- Parse `src/config/*.ts` files for environment variables
-- Extract environment variables from MikroORM/TypeORM settings
-- Parse RabbitMQ configuration for environment variables
-- Extract external service environment variables
-
-#### Express/Node.js Backend Services
-- Parse `.env` files and environment variable usage
-- Extract environment variables from database connection strings
-- Parse middleware and service environment variables
-
-#### Frontend Applications
-- Parse build configuration files (webpack, vite, etc.)
-- Extract API endpoint environment variables
-- Parse environment-specific build settings
-
-#### Libraries/Packages
-- Extract environment variable requirements from package.json
-- Parse TypeScript declaration files for environment variable interfaces
-- Extract environment variable requirements from documentation
-
-### Content Preservation
-
-- Always preserve existing custom content in sections
-- Only replace auto-generated Configuration section
-- Maintain user-added sections and custom descriptions
-- Preserve formatting and styling preferences
-- Keep project-specific information intact

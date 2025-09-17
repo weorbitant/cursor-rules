@@ -18,6 +18,7 @@ describe('Integration Tests', () => {
     const mockPackageDir = path.join(tempDir, 'mock-package');
     await fs.ensureDir(mockPackageDir);
     await fs.ensureDir(path.join(mockPackageDir, 'templates', 'rules'));
+    await fs.ensureDir(path.join(mockPackageDir, 'templates', 'commands'));
 
     // Create mock template files
     await fs.writeFile(
@@ -27,6 +28,10 @@ describe('Integration Tests', () => {
     await fs.writeFile(
       path.join(mockPackageDir, 'templates', 'rules', 'test-rule2.mdc'),
       'Test rule 2 content'
+    );
+    await fs.writeFile(
+      path.join(mockPackageDir, 'templates', 'commands', 'test-command.md'),
+      'Test command content'
     );
 
     // Mock the package.json path resolution
@@ -41,8 +46,11 @@ describe('Integration Tests', () => {
     // Create generator with mocked paths
     generator = new CursorRulesGenerator();
     generator.packageDir = mockPackageDir;
-    generator.templatesDir = path.join(mockPackageDir, 'templates', 'rules');
-    generator.destinationDir = '.cursor/rules';
+    generator.templatesDir = path.join(mockPackageDir, 'templates');
+    generator.rulesDir = path.join(mockPackageDir, 'templates', 'rules');
+    generator.commandsDir = path.join(mockPackageDir, 'templates', 'commands');
+    generator.rulesDestinationDir = '.cursor/rules';
+    generator.commandsDestinationDir = '.cursor/commands';
 
     // Restore original resolve
     require.resolve = originalResolve;
@@ -58,39 +66,48 @@ describe('Integration Tests', () => {
     it('should copy template files to destination', async () => {
       await generator.copyRules();
 
-      // Verify destination directory was created
+      // Verify destination directories were created
       expect(await fs.pathExists('.cursor/rules')).toBe(true);
+      expect(await fs.pathExists('.cursor/commands')).toBe(true);
 
-      // Verify files were copied
+      // Verify files were copied to correct locations
       expect(await fs.pathExists('.cursor/rules/test-rule1.mdc')).toBe(true);
       expect(await fs.pathExists('.cursor/rules/test-rule2.mdc')).toBe(true);
+      expect(await fs.pathExists('.cursor/commands/test-command.md')).toBe(true);
 
       // Verify file contents
       const content1 = await fs.readFile('.cursor/rules/test-rule1.mdc', 'utf8');
       const content2 = await fs.readFile('.cursor/rules/test-rule2.mdc', 'utf8');
+      const content3 = await fs.readFile('.cursor/commands/test-command.md', 'utf8');
       
       expect(content1).toBe('Test rule 1 content');
       expect(content2).toBe('Test rule 2 content');
+      expect(content3).toBe('Test command content');
     });
 
     it('should handle existing files (overwrite)', async () => {
-      // Create existing file
+      // Create existing files
       await fs.ensureDir('.cursor/rules');
+      await fs.ensureDir('.cursor/commands');
       await fs.writeFile('.cursor/rules/test-rule1.mdc', 'Old content');
+      await fs.writeFile('.cursor/commands/test-command.md', 'Old command content');
 
       await generator.copyRules();
 
-      // Verify file was overwritten
-      const content = await fs.readFile('.cursor/rules/test-rule1.mdc', 'utf8');
-      expect(content).toBe('Test rule 1 content');
+      // Verify files were overwritten
+      const content1 = await fs.readFile('.cursor/rules/test-rule1.mdc', 'utf8');
+      const content2 = await fs.readFile('.cursor/commands/test-command.md', 'utf8');
+      expect(content1).toBe('Test rule 1 content');
+      expect(content2).toBe('Test command content');
     });
 
     it('should clean only template files', async () => {
       // First copy the files
       await generator.copyRules();
 
-      // Add a custom file
+      // Add custom files
       await fs.writeFile('.cursor/rules/custom-rule.mdc', 'Custom content');
+      await fs.writeFile('.cursor/commands/custom-command.md', 'Custom command content');
 
       // Clean the template files
       await generator.cleanRules();
@@ -98,12 +115,15 @@ describe('Integration Tests', () => {
       // Verify template files were removed
       expect(await fs.pathExists('.cursor/rules/test-rule1.mdc')).toBe(false);
       expect(await fs.pathExists('.cursor/rules/test-rule2.mdc')).toBe(false);
+      expect(await fs.pathExists('.cursor/commands/test-command.md')).toBe(false);
 
-      // Verify custom file was preserved
+      // Verify custom files were preserved
       expect(await fs.pathExists('.cursor/rules/custom-rule.mdc')).toBe(true);
+      expect(await fs.pathExists('.cursor/commands/custom-command.md')).toBe(true);
 
-      // Verify directory still exists
+      // Verify directories still exist
       expect(await fs.pathExists('.cursor/rules')).toBe(true);
+      expect(await fs.pathExists('.cursor/commands')).toBe(true);
     });
 
     it('should remove empty directory after cleaning', async () => {
@@ -113,15 +133,16 @@ describe('Integration Tests', () => {
       // Clean all files
       await generator.cleanRules();
 
-      // Verify directory was removed
+      // Verify directories were removed
       expect(await fs.pathExists('.cursor/rules')).toBe(false);
+      expect(await fs.pathExists('.cursor/commands')).toBe(false);
     });
 
     it('should handle nested template files', async () => {
       // Create nested template structure
-      await fs.ensureDir(path.join(generator.templatesDir, 'nested'));
+      await fs.ensureDir(path.join(generator.rulesDir, 'nested'));
       await fs.writeFile(
-        path.join(generator.templatesDir, 'nested', 'nested-rule.mdc'),
+        path.join(generator.rulesDir, 'nested', 'nested-rule.mdc'),
         'Nested rule content'
       );
 
@@ -138,7 +159,8 @@ describe('Integration Tests', () => {
   describe('Error Handling', () => {
     it('should handle missing template directory gracefully', async () => {
       // Remove templates directory
-      await fs.remove(generator.templatesDir);
+      await fs.remove(generator.rulesDir);
+      await fs.remove(generator.commandsDir);
 
       // Mock console.error to capture error
       const consoleError = jest.spyOn(console, 'error').mockImplementation();

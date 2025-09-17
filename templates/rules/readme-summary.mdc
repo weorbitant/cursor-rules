@@ -1,0 +1,26 @@
+---
+globs: README.md, package.json, src/**/*
+---
+# README Summary Auto-update
+
+**Trigger:** When README.md or project structure changes, compare and create or replace the README.md structure to be synced with latest project information
+
+**Data Source:** Extract data from package.json, project structure, and existing README content.
+
+---
+
+## 📊 Generated Content
+
+### Summary
+**Purpose:** Display project name and basic information
+
+#### Summary example
+```markdown
+# [Project Name]
+
+## Description
+[Component Type]: [Brief description of what the component does]
+
+[Detailed description of the component's purpose, functionality, and role in the system]
+
+[Additional context about the component's responsibilities and key features]```

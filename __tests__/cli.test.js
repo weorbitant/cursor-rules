@@ -57,7 +57,7 @@ describe('CLI', () => {
       const cliPath = path.join(__dirname, '../bin/cli.js');
       const cliContent = require('fs').readFileSync(cliPath, 'utf8');
       
-      expect(cliContent).toContain('.command(\'copy\')');
+      expect(cliContent).toContain('.command(\'apply\')');
       expect(cliContent).toContain('.command(\'list\')');
       expect(cliContent).toContain('.command(\'clean\')');
       expect(cliContent).toContain('.action(async () => {');

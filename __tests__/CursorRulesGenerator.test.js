@@ -16,6 +16,7 @@ describe('CursorRulesGenerator', () => {
   beforeEach(() => {
     // Reset all mocks
     jest.clearAllMocks();
+    glob.sync.mockClear();
     
     // Mock console methods
     mockConsoleLog = jest.spyOn(console, 'log').mockImplementation();
@@ -34,20 +35,27 @@ describe('CursorRulesGenerator', () => {
   describe('constructor', () => {
     it('should initialize with correct paths', () => {
       expect(generator.packageDir).toBeDefined();
-      expect(generator.templatesDir).toContain('templates/rules');
-      expect(generator.destinationDir).toBe('.cursor/rules');
+      expect(generator.templatesDir).toContain('templates');
+      expect(generator.rulesDir).toContain('templates/rules');
+      expect(generator.commandsDir).toContain('templates/commands');
+      expect(generator.rulesDestinationDir).toBe('.cursor/rules');
+      expect(generator.commandsDestinationDir).toBe('.cursor/commands');
     });
   });
 
   describe('copyRules', () => {
     beforeEach(() => {
-      // Mock glob to return template files
-      glob.sync.mockReturnValue([
-        'readme-data-model.mdc',
-        'readme-content.mdc',
-        'readme-config.mdc',
-        'readme-async-messaging.mdc'
-      ]);
+      // Mock glob to return template files for both rules and commands
+      glob.sync
+        .mockReturnValueOnce([
+          'readme-data-model.mdc',
+          'readme-config.mdc',
+          'readme-async-messaging.mdc',
+          'readme-summary.mdc'
+        ]) // rules files
+        .mockReturnValueOnce([
+          'update-docs.md'
+        ]); // commands files
     });
 
     it('should copy all template files successfully', async () => {
@@ -57,14 +65,19 @@ describe('CursorRulesGenerator', () => {
 
       await generator.copyRules();
 
-      // Verify directory creation
+      // Verify directory creation for both rules and commands
       expect(fs.ensureDir).toHaveBeenCalledWith('.cursor/rules');
+      expect(fs.ensureDir).toHaveBeenCalledWith('.cursor/commands');
 
-      // Verify all files were copied
-      expect(fs.copy).toHaveBeenCalledTimes(4);
+      // Verify all files were copied (4 rules + 1 command = 5 total)
+      expect(fs.copy).toHaveBeenCalledTimes(5);
       expect(fs.copy).toHaveBeenCalledWith(
         expect.stringContaining('templates/rules/readme-data-model.mdc'),
         expect.stringContaining('.cursor/rules/readme-data-model.mdc')
+      );
+      expect(fs.copy).toHaveBeenCalledWith(
+        expect.stringContaining('templates/commands/update-docs.md'),
+        expect.stringContaining('.cursor/commands/update-docs.md')
       );
 
       // Verify console output
@@ -72,18 +85,20 @@ describe('CursorRulesGenerator', () => {
         expect.stringContaining('🚀 WeOrbitant Cursor Rules Generator')
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        expect.stringContaining('📁 Found 4 template files:')
+        expect.stringContaining('📁 Found 5 template files:')
       );
     });
 
     it('should handle no template files found', async () => {
-      glob.sync.mockReturnValue([]);
+      // Reset the mock completely for this test
+      glob.sync.mockReset();
+      glob.sync.mockImplementation(() => []);
       fs.ensureDir.mockResolvedValue();
 
       await generator.copyRules();
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  No template files found')
+        expect.stringContaining('⚠️  No template files found in templates/')
       );
       expect(fs.copy).not.toHaveBeenCalled();
     });
@@ -110,10 +125,14 @@ describe('CursorRulesGenerator', () => {
 
   describe('listTemplates', () => {
     it('should list available template files', async () => {
-      glob.sync.mockReturnValue([
-        'readme-data-model.mdc',
-        'readme-content.mdc'
-      ]);
+      glob.sync
+        .mockReturnValueOnce([
+          'readme-data-model.mdc',
+          'readme-summary.mdc'
+        ]) // rules files
+        .mockReturnValueOnce([
+          'update-docs.md'
+        ]); // commands files
 
       await generator.listTemplates();
 
@@ -121,15 +140,18 @@ describe('CursorRulesGenerator', () => {
         expect.stringContaining('📋 Available Cursor Rules Templates:')
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        expect.stringContaining('1. readme-data-model.mdc')
+        expect.stringContaining('1. readme-data-model.mdc (rules)')
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        expect.stringContaining('2. readme-content.mdc')
+        expect.stringContaining('2. readme-summary.mdc (rules)')
+      );
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining('3. update-docs.md (commands)')
       );
     });
 
     it('should handle no templates found', async () => {
-      glob.sync.mockReturnValue([]);
+      glob.sync.mockImplementation(() => []);
 
       await generator.listTemplates();
 
@@ -161,10 +183,14 @@ describe('CursorRulesGenerator', () => {
 
   describe('cleanRules', () => {
     beforeEach(() => {
-      glob.sync.mockReturnValue([
-        'readme-data-model.mdc',
-        'readme-content.mdc'
-      ]);
+      glob.sync
+        .mockReturnValueOnce([
+          'readme-data-model.mdc',
+          'readme-summary.mdc'
+        ]) // rules files
+        .mockReturnValueOnce([
+          'update-docs.md'
+        ]); // commands files
     });
 
     it('should remove only template files', async () => {
@@ -179,7 +205,10 @@ describe('CursorRulesGenerator', () => {
         expect.stringContaining('.cursor/rules/readme-data-model.mdc')
       );
       expect(fs.remove).toHaveBeenCalledWith(
-        expect.stringContaining('.cursor/rules/readme-content.mdc')
+        expect.stringContaining('.cursor/rules/readme-summary.mdc')
+      );
+      expect(fs.remove).toHaveBeenCalledWith(
+        expect.stringContaining('.cursor/commands/update-docs.md')
       );
 
       // Verify directory was kept (contains other files)
@@ -195,33 +224,44 @@ describe('CursorRulesGenerator', () => {
 
       await generator.cleanRules();
 
-      // Verify directory was removed
+      // Verify directories were removed
       expect(fs.remove).toHaveBeenCalledWith('.cursor/rules');
+      expect(fs.remove).toHaveBeenCalledWith('.cursor/commands');
       expect(mockConsoleLog).toHaveBeenCalledWith(
         expect.stringContaining('✅ Removed empty directory: .cursor/rules')
+      );
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining('✅ Removed empty directory: .cursor/commands')
       );
     });
 
     it('should handle files not found', async () => {
       fs.pathExists
-        .mockResolvedValueOnce(true)  // for first file
-        .mockResolvedValueOnce(false) // for second file
-        .mockResolvedValueOnce(true); // for directory check
+        .mockResolvedValueOnce(true)  // for first rules file
+        .mockResolvedValueOnce(false) // for second rules file
+        .mockResolvedValueOnce(true)  // for commands file
+        .mockResolvedValueOnce(true)  // for rules directory check
+        .mockResolvedValueOnce(true); // for commands directory check
       fs.remove.mockResolvedValue();
       fs.readdir.mockResolvedValue([]);
 
       await generator.cleanRules();
 
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        expect.stringContaining('✅ Removed: readme-data-model.mdc')
+        expect.stringContaining('✅ Removed: readme-data-model.mdc (from .cursor/rules)')
       );
       expect(mockConsoleLog).toHaveBeenCalledWith(
-        expect.stringContaining('⚪ Not found: readme-content.mdc')
+        expect.stringContaining('⚪ Not found: readme-summary.mdc')
+      );
+      expect(mockConsoleLog).toHaveBeenCalledWith(
+        expect.stringContaining('✅ Removed: update-docs.md (from .cursor/commands)')
       );
     });
 
     it('should handle no template files to clean', async () => {
-      glob.sync.mockReturnValue([]);
+      // Reset the mock completely for this test
+      glob.sync.mockReset();
+      glob.sync.mockImplementation(() => []);
 
       await generator.cleanRules();
 

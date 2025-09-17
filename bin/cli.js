@@ -10,25 +10,25 @@ const generator = new CursorRulesGenerator();
 program
   .name('cursor-rules')
   .description('Generate Cursor rules from templates')
-  .version('1.0.0');
+  .version(require('../package.json').version);
 
 program
-  .command('copy')
-  .description('Copy all rule templates to .cursor/rules directory')
+  .command('apply')
+  .description('Apply all templates to .cursor directory')
   .action(async () => {
     await generator.copyRules();
   });
 
 program
   .command('list')
-  .description('List available rule templates')
+  .description('List available templates')
   .action(async () => {
     await generator.listTemplates();
   });
 
 program
   .command('clean')
-  .description('Remove existing .cursor/rules directory')
+  .description('Remove existing .cursor directory')
   .action(async () => {
     await generator.cleanRules();
   });
@@ -40,7 +40,7 @@ program
     console.log(chalk.gray('=========================='));
     console.log('');
     console.log(chalk.white('Available commands:'));
-    console.log(chalk.gray('  copy    Copy all rule templates to .cursor/rules'));
+    console.log(chalk.gray('  apply   Apply all templates to .cursor directory'));
     console.log(chalk.gray('  list    List available rule templates'));
     console.log(chalk.gray('  clean   Remove existing .cursor/rules directory'));
     console.log('');

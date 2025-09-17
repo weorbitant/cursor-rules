@@ -1,95 +1,62 @@
 ---
-globs: src/config/*
-alwaysApply: false
+globs: src/config/*.ts
 ---
-# README Auto-update Rules - Async Messaging
+# Async Messaging README Auto-update
 
-## Auto-update README Messaging Section
+**Trigger:** When RabbitMQ config is modified, compare and create or replace the README.md "Async Messaging" section to be synced with latest values
 
-When files in `src/config/` are modified (specifically configuration files containing RabbitMQ settings), automatically update the README.md file with an "Async Messaging" section that includes:
+**Data Source:** Extract data from the `rabbitmq` attribute containing `exchange`, `publications`, `subscriptions`, and `queues` configuration.
 
-1. A Mermaid diagram showing the messaging architecture with exchanges, queues, and routing keys
-2. A table describing each queue, its purpose, and routing keys
-3. The section should be placed after the "Data Model" section and before "Project setup"
+---
 
-### Messaging Section Template
+## 📊 Generated Content
 
-The messaging section should follow this structure:
+### 1. Mermaid Diagram
+**Purpose:** Visual representation of message flow: `input exchange → bindings → queue → subscription → consumer → publication → routing key → output exchange`
 
+#### Diagram Specifications
+- ✅ Use arrows to show message flow direction from left to right
+- ✅ Include bindings and routing keys as labels on arrows  
+- ✅ Group related elements in subgraphs
+- ✅ Ensure mermaid syntax is valid
+
+#### Diagram example
 ```markdown
-## Async Messaging
-
-This service uses RabbitMQ for asynchronous communication with other services in the data platform.
-
 ### Messaging Diagram
-
 ```mermaid
 graph LR
+    subgraph InputExchange["Input Exchange"]
+        InputExchangeNode["internal"]
+    end
     subgraph Queues["Queues"]
-        Queue1["platform-adapter:employee:persisted"]
-        Queue2["platform-adapter:client-assignment:persisted"]
+        Queue1["platform-adapter:entity:persisted"]
     end
-    
     subgraph Subscriptions["Subscriptions"]
-        Sub1["employee_persisted"]
-        Sub2["client_assignment_persisted"]
+        Sub1["entity_persisted"]
     end
-    
     subgraph Consumer["Consumer"]
-        ConsumerTag["pd-service-platform-adapter"]
+        ConsumerTag["pd-service-platform-api"]
     end
-    
-    Queue1 -->|*data-factory.v1.employee.persisted*| Sub1
-    Queue2 -->|*data-factory.v1.client-assignment.persisted*| Sub2
-    
+    subgraph Publications["Publications"]
+        Pub1["entity_persisted"]
+    end
+    subgraph OutputExchange["Output Exchange"]
+        OutputExchangeNode["internal"]
+    end
+    %% Input flow
+    InputExchangeNode -->|platform-adapter.v1.entity.persisted| Queue1
+    Queue1 --> Sub1
     Sub1 --> ConsumerTag
-    Sub2 --> ConsumerTag
+    %% Output flow
+    ConsumerTag --> Pub1
+    Pub1 -->|platform-api.v1.entity.persisted| OutputExchangeNode
     
     classDef dashedBox fill:transparent,stroke:#666,stroke-width:2px,stroke-dasharray: 5 5
-    class Queues dashedBox
+    class InputExchange,Queues,Subscriptions,Publications,OutputExchange dashedBox
 ```
 
-### Queue Configuration
+### 2. Queue Configuration Table
+**Purpose:** Display a table with subscription, exchange, binding and queue name columns
 
-| Exchange | Binding | Queue Name | Subscription |
-|----------|---------|------------|--------------|
-| internal | data-factory.v1.employee.persisted | platform-adapter:employee:persisted | employee_persisted |
-| internal | data-factory.v1.client-assignment.persisted | platform-adapter:client-assignment:persisted | client_assignment_persisted |
-
-```
-
-### Update Rules
-
-1. **When any file in `src/config/` is modified:**
-   - Parse configuration files to extract RabbitMQ settings
-   - Generate an updated Mermaid messaging diagram
-   - Update the queue configuration table
-   - Replace the entire "Async Messaging" section in README.md
-
-2. **Configuration parsing logic:**
-   - Extract `rabbitmq` configuration object
-   - Parse `queues` array for queue names and bindings
-   - Extract `routingKey` values from bindings
-   - Parse `subscriptions` array for subscription names
-   - Extract `exchange` name and `consumerTag`
-
-3. **Mermaid diagram generation:**
-   - Create a graph showing the exchange, queues, and external services
-   - Use arrows to show message flow direction
-   - Include routing keys as labels on arrows
-   - Group related elements in subgraphs
-
-4. **File structure:**
-   - Always maintain the existing README structure
-   - Place the Async Messaging section after Data Model and before Project setup
-   - Use consistent markdown formatting
-   - Ensure the Mermaid diagram is properly formatted and valid
-
-### Implementation Notes
-
-- The cursor rule should trigger on any change to files matching `src/config/*.ts`
-- The update should be atomic - either fully update the section or leave it unchanged
-- Preserve all other README content exactly as it was
-- Use TypeScript AST parsing to accurately extract configuration information
-- Handle edge cases like missing configuration properties or malformed config gracefully
-- Support multiple environment configurations (development, production, etc.)
+### 3. Publications Configuration Table  
+**Purpose:** Display a table with publication, exchange and routing key columns
