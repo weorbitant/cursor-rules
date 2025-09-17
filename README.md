@@ -1,11 +1,12 @@
-# @weorbitant/cursor-rules
+# @orbitant/cursor-rules
 
-A Node.js package for generating and managing Cursor IDE rules from templates. This package allows you to easily copy predefined Cursor rules to your project's `.cursor/rules` directory.
+A Node.js package for generating and managing Cursor IDE rules and commands from templates. This package allows you to easily copy predefined Cursor rules to your project's `.cursor/rules` directory and commands to your `.cursor/commands` directory.
 
 ## 🚀 Features
 
 - **Template-based Rule Generation**: Copy Cursor rules from predefined templates
-- **Selective File Management**: Only manages files from this package, preserving user's custom rules
+- **Template-based Command Generation**: Copy Cursor commands from predefined templates
+- **Selective File Management**: Only manages files from this package, preserving user's custom rules and commands
 - **CLI Interface**: Easy-to-use command-line interface
 - **Safe Operations**: Non-destructive clean operations that preserve user files
 - **Smart Directory Management**: Automatically handles directory creation and cleanup
@@ -15,41 +16,41 @@ A Node.js package for generating and managing Cursor IDE rules from templates. T
 Install as a dev dependency in your project:
 
 ```bash
-npm install --save-dev @weorbitant/cursor-rules
+npm install --save-dev @orbitant/cursor-rules
 ```
 
 ## 🎯 Usage
 
 ### Available Commands
 
-#### Copy Rules
-Copy all rule templates to your project's `.cursor/rules` directory:
+#### Apply Rules and Commands
+Apply all rule and command templates to your project's `.cursor/` directory:
 
 ```bash
-npx @weorbitant/cursor-rules copy
+npx @orbitant/cursor-rules apply
 ```
 
 #### List Templates
 View all available rule templates:
 
 ```bash
-npx @weorbitant/cursor-rules list
+npx @orbitant/cursor-rules list
 ```
 
-#### Clean Rules
-Remove only the rules that were copied from this package (preserves user's custom rules):
+#### Clean Rules and Commands
+Remove only the rules and commands that were copied from this package (preserves user's custom files):
 
 ```bash
-npx @weorbitant/cursor-rules copy
+npx @orbitant/cursor-rules clean
 ```
 
 #### Show Help
 Display available commands and usage information:
 
 ```bash
-npx @weorbitant/cursor-rules
+npx @orbitant/cursor-rules
 # or
-npx @weorbitant/cursor-rules --help
+npx @orbitant/cursor-rules --help
 ```
 
 ### Package.json Scripts
@@ -59,9 +60,9 @@ Add to your `package.json` for easy access:
 ```json
 {
   "scripts": {
-    "cursor:rules": "npx @weorbitant/cursor-rules copy",
-    "cursor:rules:list": "npx @weorbitant/cursor-rules list",
-    "cursor:rules:clean": "npx @weorbitant/cursor-rules clean"
+    "cursor:rules": "npx @orbitant/cursor-rules apply",
+    "cursor:rules:list": "npx @orbitant/cursor-rules list",
+    "cursor:rules:clean": "npx @orbitant/cursor-rules clean"
   }
 }
 ```
@@ -73,17 +74,21 @@ npm run cursor:rules
 
 ## 📁 Available Templates
 
-This package includes the following Cursor rule templates:
+This package includes the following Cursor rule and command templates:
 
+### Rules (.cursor/rules/)
 1. **readme-async-messaging.mdc** - Auto-update README with async messaging architecture
 2. **readme-config.mdc** - Auto-update README with configuration section
-3. **readme-content.mdc** - Auto-update README with content management rules
-4. **readme-data-model.mdc** - Auto-update README with data model documentation
+3. **readme-data-model.mdc** - Auto-update README with data model documentation
+4. **readme-summary.mdc** - Auto-update README with summary section
+
+### Commands (.cursor/commands/)
+1. **update-docs.md** - Command to update project documentation
 
 ## 🔧 How It Works
 
-1. **Template Discovery**: Scans the `templates/rules/` directory for `.mdc` files
-2. **Destination Management**: Creates `.cursor/rules/` directory if it doesn't exist
+1. **Template Discovery**: Scans the `templates/rules/` directory for `.mdc` files and `templates/commands/` directory for `.md` files
+2. **Destination Management**: Creates `.cursor/rules/` and `.cursor/commands/` directories if they don't exist
 3. **File Copying**: Copies each template file, preserving directory structure
 4. **Safe Cleanup**: Only removes files that were originally copied from this package
 
@@ -96,19 +101,23 @@ This package includes the following Cursor rule templates:
 
 ## 📋 Example Output
 
-### Copy Command
+### Apply Command
 ```
 🚀 WeOrbitant Cursor Rules Generator
 ================================
 ✅ Created directory: .cursor/rules
-📁 Found 4 template files:
+✅ Created directory: .cursor/commands
+📁 Found 4 rule template files:
   ✅ Copied: readme-data-model.mdc
-  ✅ Copied: readme-content.mdc
+  ✅ Copied: readme-summary.mdc
   ✅ Copied: readme-config.mdc
   ✅ Copied: readme-async-messaging.mdc
+📁 Found 1 command template files:
+  ✅ Copied: update-docs.md
 
 🎉 Successfully copied 4 rule files to .cursor/rules/
-You can now use these rules in your Cursor IDE!
+🎉 Successfully copied 1 command file to .cursor/commands/
+You can now use these rules and commands in your Cursor IDE!
 ```
 
 ### Clean Command
@@ -116,13 +125,15 @@ You can now use these rules in your Cursor IDE!
 🧹 Cleaning WeOrbitant Cursor Rules
 ================================
   ✅ Removed: readme-data-model.mdc
-  ✅ Removed: readme-content.mdc
+  ✅ Removed: readme-summary.mdc
   ✅ Removed: readme-config.mdc
   ✅ Removed: readme-async-messaging.mdc
+  ✅ Removed: update-docs.md
 📁 Directory .cursor/rules kept (contains other files)
+📁 Directory .cursor/commands kept (contains other files)
 
 🎉 Cleanup complete!
-  • Removed: 4 files
+  • Removed: 5 files
   • Not found: 0 files
 ```
 
@@ -130,16 +141,16 @@ You can now use these rules in your Cursor IDE!
 
 ### With Cursor IDE
 
-After running the copy command, your Cursor IDE will automatically detect the rules in `.cursor/rules/` and apply them to your project.
+After running the apply command, your Cursor IDE will automatically detect the rules in `.cursor/rules/` and commands in `.cursor/commands/`, making them available for use in your project.
 
 ### With CI/CD
 
-Add to your CI/CD pipeline to ensure consistent rules across environments:
+Add to your CI/CD pipeline to ensure consistent rules and commands across environments:
 
 ```yaml
 # GitHub Actions example
 - name: Setup Cursor Rules
-  run: npx @weorbitant/cursor-rules copy
+  run: npx @orbitant/cursor-rules apply
 ```
 
 ## 🧪 Testing
