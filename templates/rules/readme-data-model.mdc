@@ -1,5 +1,5 @@
 ---
-globs: src/domain/models/*
+globs: "src/domain/models/*"
 ---
 # Data Model README Auto-update
 

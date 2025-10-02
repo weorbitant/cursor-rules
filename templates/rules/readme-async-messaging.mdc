@@ -1,5 +1,5 @@
 ---
-globs: src/config/*.ts
+globs: "src/config/*.ts"
 ---
 # Async Messaging README Auto-update
 
