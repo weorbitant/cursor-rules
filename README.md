@@ -80,7 +80,9 @@ This package includes the following Cursor rule and command templates:
 1. **readme-async-messaging.mdc** - Auto-update README with async messaging architecture
 2. **readme-config.mdc** - Auto-update README with configuration section
 3. **readme-data-model.mdc** - Auto-update README with data model documentation
-4. **readme-summary.mdc** - Auto-update README with summary section
+4. **readme-development.mdc** - Auto-update README with project setup and development instructions
+5. **readme-content.mdc** - Auto-update README overall, defining document sections and which template are intended to use on each one
+6. **readme-summary.mdc** - Auto-update README with summary section
 
 ### Commands (.cursor/commands/)
 1. **update-docs.md** - Command to update project documentation
