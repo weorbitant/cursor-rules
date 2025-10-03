@@ -56,11 +56,15 @@ The README should follow this structure:
 ## Configuration
 
 [For all code repositories - follows readme-config.mdc rules]
+
+## Setup and development
+
+[For all code repositories - follows readme-development.mdc rules]
 ```
 
 ## Component Type Detection
 
-The system should automatically detect the component type based on project structure and dependencies:
+The system should automatically detect the component type based on project structure and dependencies and follows readme-development.mdc accordingly:
 
 ### Microservice/Backend Service Indicators:
 - NestJS framework (`@nestjs/core` in package.json)
@@ -77,10 +81,11 @@ The system should automatically detect the component type based on project struc
 - Browser-specific dependencies
 
 ### Library/Package Indicators:
-- Library-specific package.json structure
+- Library-specific `package.json` structure
 - TypeScript declaration files
 - Minimal runtime dependencies
 - Export/import focused structure
+
 
 ## Description Generation Rules
 
