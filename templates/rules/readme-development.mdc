@@ -1,0 +1,263 @@
+---
+globs: 
+   - "src/config/*", 
+   - ".helm/values.yaml"
+   - ".github/workflows/*.yml"
+   - "src/app.module.ts"
+   - "package.json"
+   - ".nvmrc"
+   - "Dockerfile"
+   - "infra/docker-compose.local.yml"
+alwaysApply: false
+description: Auto-update README Development section when configuration, deployment, or build files are modified
+---
+# README Auto-update - Development
+
+## Auto-update README Development Section
+
+When any of the following files are modified:  
+- [package.json](mdc:package.json)
+- [.nvmrc](mdc:.nvmrc)
+- [Dockerfile](mdc:Dockerfile)
+- [infra/docker-compose.local.yml](mdc:infra/docker-compose.local.yml)
+- `src/config/*`
+- `.helm/values.yaml`
+- `.github/workflows/*.yml`
+- [src/app.module.ts](mdc:src/app.module.ts)
+
+automatically update or create the "Development" section in the [README.md](mdc:README.md) file with clear, up-to-date instructions for starting development on the project.
+
+## Placement
+
+The Development section should be placed **after the Configuration section** and before any License or Contributing sections (if they exist). If no such sections exist, place it at the end of the README.
+
+## Development Section Template
+
+When generating the Development section, use the following template and populate it with accurate information from the project files. Should skip parts if they are found missing in the project files. Following is the template:
+
+```markdown
+## Development
+
+### Requirements
+
+- **Node.js**: `[VERSION from .nvmrc]`
+- **npm**: Comes with Node.js
+- **Docker & Docker Compose**: For local infrastructure (PostgreSQL, RabbitMQ)
+
+### Installation
+
+1. **Clone the repository:**
+   ```bash
+   git clone <repository-url>
+   cd pd-service-data-factory
+   ```
+
+2. **Install Node.js version:**
+   ```bash
+   nvm install
+   nvm use
+   ```
+
+3. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+4. **Start local infrastructure:**
+   ```bash
+   npm run infra:up
+   ```
+   
+   This starts:
+   - PostgreSQL database on port `5432`
+   - RabbitMQ server on ports `5672` (AMQP) and `15672` (Management UI)
+
+5. **Run database migrations:**
+   ```bash
+   npm run migrations:up
+   ```
+
+### Running the Application
+
+#### Development Mode
+```bash
+npm run start:dev
+```
+This runs the application with hot-reload enabled. The API will be available at `http://localhost:3000`.
+
+#### Debug Mode
+```bash
+npm run start:debug
+```
+This runs the application in debug mode with hot-reload. You can attach a debugger on port `9229`.
+
+#### Production Mode
+```bash
+npm run build
+npm run start:prod
+```
+
+### Testing
+
+```bash
+# Run all unit tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:cov
+
+# Run end-to-end tests
+npm run test:e2e
+
+# Debug tests
+npm run test:debug
+```
+
+### Code Quality
+
+```bash
+# Run linter
+npm run lint
+
+# Fix linting issues automatically
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+```
+
+### Database Management
+
+```bash
+# Create a new migration
+npm run migrations:create
+
+# Run pending migrations
+npm run migrations:up
+
+# Rollback last migration
+npm run migrations:down
+
+# Create initial migration
+npm run migrations:create-initial
+```
+
+### Stopping Local Infrastructure
+
+```bash
+npm run infra:down
+```
+
+## CI/CD
+
+### Continuous Integration
+
+The project uses GitHub Actions for automated testing, building, and deployment.
+
+#### Pull Request Workflow (`on-pull-request.yml`)
+Triggered when a pull request is opened or updated against the `main` branch:
+- **Test**: Runs all unit and integration tests
+- Uses shared workflow from `afianza-ac/af-infra-workflows`
+
+#### Main Branch Workflow (`on-commit-main.yml`)
+Triggered on every commit to the `main` branch:
+1. **Test**: Runs all unit and integration tests
+2. **Build & Push**: Builds Docker image and pushes to Docker registry
+   - Image: `registry.aitire.cloud/afianza/afsync/afianza-ac/pd-service-data-factory`
+   - Tags: Auto-generated version tags
+3. **Deploy to Development**: Automatically deploys to Kubernetes development environment
+   - Namespace: `plataformadato`
+   - Environment: `development`
+   - Updates Helm values with new image tag and configuration
+
+#### Production Deployment Workflow (`manual-deploy-on-prod.yml`)
+Manual workflow triggered via GitHub Actions UI:
+- **Input**: Docker image tag to deploy
+- **Steps**:
+  1. Validates that the specified image exists in the registry
+  2. Deploys to Kubernetes production environment
+  - Namespace: `plataformadato`
+  - Environment: `production`
+  - Updates Helm values with specified image tag
+
+### Environment Variables for CI/CD
+
+The following secrets and variables must be configured in GitHub:
+
+**Secrets:**
+- `NPM_TOKEN`: GitHub Packages authentication token
+- `DOCKER_PASSWORD`: Docker registry password
+- `POSTGRES_PASSWORD_DEV`: PostgreSQL password for development
+- `POSTGRES_PASSWORD_PROD`: PostgreSQL password for production
+- `KUBECONFIG_DEV`: Kubernetes config for development cluster
+- `KUBECONFIG_PROD`: Kubernetes config for production cluster
+- `CUSTOM_GITHUB_TOKEN`: GitHub token for Helm chart access
+
+**Variables:**
+- `DOCKER_USERNAME`: Docker registry username
+
+### Docker Image
+
+The application is containerized using a multi-stage Dockerfile:
+- **Base Image**: `node:22-alpine`
+- **Build Stage**: Installs dependencies and builds the application
+- **Production Stage**: Creates optimized production image with only necessary dependencies
+- **User**: Runs as non-root user `nestjs` for security
+- **Entry Point**: `npm run start:prod`
+
+### Deployment Architecture
+
+- **Container Registry**: `registry.aitire.cloud/afianza/afsync/afianza-ac`
+- **Orchestration**: Kubernetes with Helm
+- **Namespace**: `plataformadato`
+- **Environments**:
+  - **Development**: Auto-deployed on every commit to `main`
+  - **Production**: Manually deployed via workflow dispatch
+```
+
+## Content Extraction Rules
+
+When updating the Development section, extract information from the following sources:
+
+1. **Node.js Version**: Read from `.nvmrc` file
+2. **npm Scripts**: Parse `package.json` scripts section to list available commands
+3. **Infrastructure Services**: Parse `infra/docker-compose.local.yml` to document:
+   - Service names
+   - Ports exposed
+   - Default credentials (if appropriate for local development)
+4. **Docker Configuration**: Parse `Dockerfile` to document:
+   - Base image versions
+   - Build arguments
+   - Entry points
+5. **CI/CD Workflows**: Parse `.github/workflows/*.yml` files to document:
+   - Workflow names and triggers
+   - Job steps and dependencies
+   - Deployment targets and environments
+   - Required secrets and variables
+6. **Application Configuration**: Parse `src/config/*.ts` and `src/app.module.ts` to identify:
+   - Required environment variables
+   - Default values
+   - Configuration options
+
+## Update Strategy
+
+1. **Preserve existing content**: Only update the Development section, leaving all other README sections unchanged
+2. **Complete replacement**: Replace the entire Development section (including CI/CD subsections) with the newly generated content
+3. **Formatting consistency**: Maintain consistent markdown formatting with the rest of the README
+4. **Accuracy**: Ensure all commands, ports, and version numbers are accurate and match the project files
+5. **Clarity**: Use clear, step-by-step instructions that a new developer can follow
+6. **Completeness**: Include all necessary information for local development, testing, and understanding the deployment process
+
+## Implementation Notes
+
+- Extract version numbers and configuration dynamically from source files
+- Do not hardcode values that may change
+- Keep instructions concise but complete
+- Include troubleshooting tips if common issues are known
+- Update section atomically - either fully update or leave unchanged
+- Validate that all referenced scripts exist in `package.json`
+- Ensure all ports mentioned match the actual configuration
+

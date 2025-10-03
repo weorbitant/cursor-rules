@@ -16,3 +16,5 @@ This file contains commands and instructions for updating project documentation.
 **When:** Config files detected (`src/config/`, `.env`, etc.)
 **Apply rules:** `readme-config.mdc`
 
+**When:** Project wide files changed (`.nvmrc`, `package.json`, `src/app.module.ts`, `Dockerfile`, `.github/workflows/*.yml`, etc)
+**Apply rules:** `readme-development.mdc`

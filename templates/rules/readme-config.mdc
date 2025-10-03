@@ -1,5 +1,10 @@
 ---
-globs: src/config/*, .helm/values.yaml, .github/workflows/*.yml, src/app.module.ts, package.json
+globs: 
+    - "src/config/*"
+    - ".helm/values.yaml"
+    - ".github/workflows/*.yml"
+    - "src/app.module.ts"
+    - "package.json"
 ---
 # Configuration README Auto-update
 
