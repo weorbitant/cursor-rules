@@ -1,0 +1,109 @@
+---
+description: Guidelines defining how AI-generated controllers code must be implemented
+alwaysApply: false
+---
+
+Follow this info strictly to maintain controllers consistency
+
+---
+
+## 1. Creation
+Always generate controllers using:
+
+`nest g controller [name] application/rest`
+
+This ensures correct scaffolding of controller and tests and registration in `app.module.ts`.
+
+Then, a `dto/` folder must be created inside the controller folder.
+
+---
+
+## 2. DTO Rules
+- All DTOs go under `application/rest/[name]/dto/`.
+- Must include:
+  - Swagger decorators (e.g., `@ApiProperty`)
+  - Validation (`class-validator`)
+  - Transformation (`class-transformer`) when needed
+- Controllers must return DTOs (or void), **never domain entities**.
+
+---
+
+## 3. Responsibilities
+Controllers:
+- Validate input via DTOs.
+- Map request → domain-friendly data.
+- Call **domain services only**.
+- Document routes with Swagger.
+- Contain no business logic.
+- Must not call infrastructure or repositories directly, only domain services.
+
+---
+
+## 4. REST Standards
+- Use correct HTTP verbs and RESTful routes (`POST /resource`, `GET /resource/:id`, etc.).
+- Use Nest pipes for params (`ParseIntPipe`, `ParseUUIDPipe`, etc.).
+- Routes must be kebab-case.
+- Controllers are always versioned (by default version 1)
+
+---
+
+## 5. Testing
+Use Supertest + Nest testing module:
+
+- Mock all domain services.
+- Verify:
+  - DTO validation works.
+  - Bad inputs return `400 Bad Request`.
+  - Correct mapping of inputs before calling the domain service.
+- Do NOT test domain or infrastructure logic.
+
+Generate always a test with the "success" case, and if it's and endpoint requesting params, one bad request case.
+
+Test file should contain something like this:
+
+```
+describe('MyController', () => {
+  let app: INestApplication;
+
+  const mockDomainService = {
+    create: jest.fn(),
+  };
+
+  beforeEach(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      controllers: [MyController],
+      providers: [{ provide: MyDomainService, useValue: mockDomainService }],
+    }).compile();
+
+    app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.enableVersioning({
+      type: VersioningType.URI,
+    });
+    await app.init();
+  });
+
+  describe('POST /my-resource', () => {
+    it('should validate DTO and call domain service', async () => {
+      mockDomainService.create.mockResolvedValue({ id: '1', name: 'Created' });
+
+      await request(app.getHttpServer())
+        .post('/my-resource')
+        .send({ name: 'Created' })
+        .expect(201)
+        .expect((res) => {
+          expect(res.body).toEqual({ id: '1', name: 'Created' });
+        });
+
+      expect(mockDomainService.create).toHaveBeenCalledWith({ name: 'Created' });
+    });
+
+    it('should return 400 for invalid input', async () => {
+      await request(app.getHttpServer())
+        .post('/my-resource')
+        .send({ invalidField: true })
+        .expect(400);
+    });
+  });
+});
+```

@@ -1,0 +1,24 @@
+---
+alwaysApply: true
+---
+
+## Interactive Controller Generation Rules
+
+When generating NEW controllers in the application/rest layer:
+
+1. **Ask for or confirm the controller name**
+   - If the user has not provided a name or it's implied/ambiguous, ask: "What should the controller be called?" or propose a name and ask: "Should the controller be named `<suggested-name>`?"
+
+2. **Ask for or confirm the endpoints/methods**
+   - If the user has not listed any endpoints or gives only a general idea (e.g., 'CRUD' or 'manage tasks'), propose a list of endpoints with format `[HTTP VERB] [ROUTE] - [minimal description]` and ask: "Do you want to implement these operations?"
+     Example: "GET /v1/resource/:id - Get resource by ID"
+
+3. **Do not generate code until the user answers the questions above.**
+
+4. **Never assume routes, method names, HTTP verbs, or DTOs unless the user confirms them.**
+
+5. Once confirmed, generate:
+   - The controller scaffold using the Nest CLI pattern.
+   - The dto/ folder and initial DTOs.
+   - Swagger decorators and validation.
+   - The controller file with the agreed endpoints.
